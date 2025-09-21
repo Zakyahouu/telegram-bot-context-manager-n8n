@@ -52,10 +52,10 @@ Context is written back every time the state changes, so next run continues corr
 
 # Google Sheets Structure
 
-| userID | user-name | status |
-|--------|-----------|--------|
-| 12345  | zakaria   | Active |
-| 67890  | testuser  | Idle   |
+| userID | status    | user-name |
+|--------|-----------|-----------|
+| 12345  | Active    |   Active  |
+| 67890  | Idle      |   Idle    |
 
 - **userID**: Telegram user’s ID → used as unique key.
 - **user-name**: Telegram username.
@@ -71,11 +71,3 @@ Context is written back every time the state changes, so next run continues corr
 - **Exit** → Resets status back to `Idle`.
 
 ---
-
-# Key Benefits
-
-✅ Users always have a saved state across runs.  
-✅ Easy to debug because all states are visible in Google Sheets.  
-✅ Clean separation of logic: normalization, state management, execution.  
-✅ Scalable: can add more states/commands later without breaking flow.
-

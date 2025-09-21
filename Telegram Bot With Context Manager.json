@@ -1,0 +1,1213 @@
+{
+  "name": "Telegram Bot With Context Manager",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "let output = $('Context Normalizer').first().json.output\nlet input = $('Context Normalizer').first().json.output;\n\nlet userID = $input.first().json.userID\nlet userStatus = $input.first().json.status\nlet userName = $input.first().json[\"user-name\"]\n\nif(!userStatus) {\n  userStatus = \"Idle\"\n}  if ($('Context Normalizer').first().json.output.type == \"message\") {\n    if($input.first().json.status == \"Custom Command\") {\n      userStatus = \"Active\";\n    }\n} \nif ($('Context Normalizer').first().json.output.type == \"callback\") {\n  if($('Context Normalizer').first().json.output.callback == \"custom_command\") {\n    userStatus = \"Custom Command\";\n  } else {\n    userStatus = \"Active\";\n  }\n  \n}\n\nreturn {json: {output, userStatus}};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "4f61afe2-f6f5-4442-8d16-eee2ac8ae25f",
+      "name": "Context Manager"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let input = $json;\nlet output = { };\nif (input.message) {\n  // It's a normal text message\n  output = {\n    chatId: input.message.chat.id,\n    userId: input.message.from.id,\n    username: input.message.from.username,\n    type: \"message\",\n    text: input.message.text || null,\n    callback: null,\n    raw: input\n  };\n} else if (input.callback_query) {\n  // It's a button press\n  output = {\n    chatId: input.callback_query.message.chat.id,\n    userId: input.callback_query.from.id,\n    username: input.callback_query.from.username,\n    type: \"callback\",\n    text: null,\n    callback: input.callback_query.data,\n    raw: input\n  };\n}\n\nreturn {json: {output}};\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        0
+      ],
+      "id": "5363c6a8-5900-4752-bb94-618a9b646525",
+      "name": "Context Normalizer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "782babf8-ddc8-4678-8347-3aa8dc089c82",
+              "leftValue": "={{ $json.output.raw.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        -560
+      ],
+      "id": "2938a7a4-32a2-4539-a7cc-bc70b8cc1652",
+      "name": "Idle + start command"
+    },
+    {
+      "parameters": {
+        "content": "**ENTRY POINT**\n- Workflow starts from Telegram Trigger.\n- Input normalized into unified format.",
+        "height": 272,
+        "width": 432,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1216,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "fca57f34-862a-4c9b-b958-dff6eb43d113",
+      "name": "Sticky Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1152,
+        0
+      ],
+      "id": "ed909053-17d7-4499-a4cf-a12deb5bc07e",
+      "name": "Get Message / Callback Query",
+      "webhookId": "89431855-6348-4a2e-b2f0-f7232576a3db",
+      "credentials": {
+        "telegramApi": {
+          "id": "VAVyFjKABam8RvNK",
+          "name": "Skillsnap_server_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU",
+          "mode": "list",
+          "cachedResultName": "Skillsnap_server_bot_checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user-name": "={{ $json.output.username }}",
+            "userID": "={{ $json.output.userId }}"
+          },
+          "matchingColumns": [
+            "userID"
+          ],
+          "schema": [
+            {
+              "id": "userID",
+              "displayName": "userID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user-name",
+              "displayName": "user-name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -720,
+        0
+      ],
+      "id": "456b80ac-a391-4298-b37e-9ab9dfc02262",
+      "name": "Add User ID",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qQX02ne6uTdqBLES",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU",
+          "mode": "list",
+          "cachedResultName": "Skillsnap_server_bot_checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -512,
+        0
+      ],
+      "id": "916c35b8-e831-4095-a774-afe5b4dee890",
+      "name": "Get User Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qQX02ne6uTdqBLES",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU",
+          "mode": "list",
+          "cachedResultName": "Skillsnap_server_bot_checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "userID": "={{ $json.output.userId }}",
+            "status": "=Idle"
+          },
+          "matchingColumns": [
+            "userID"
+          ],
+          "schema": [
+            {
+              "id": "userID",
+              "displayName": "userID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user-name",
+              "displayName": "user-name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        208
+      ],
+      "id": "99876fb8-3b29-4ef9-8d89-c3c22cd48abf",
+      "name": "User Status Updated To \"Idle\"",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qQX02ne6uTdqBLES",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Route By User Status').item.json.output.chatId }}",
+        "text": "Thank u for uisng the Bot !",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        208
+      ],
+      "id": "919addd6-da88-4094-8d7b-79ffee8a48d5",
+      "name": "Goodby Message",
+      "webhookId": "d736d64b-d1e1-4fb4-a1d5-a83f1f1e1d2f",
+      "credentials": {
+        "telegramApi": {
+          "id": "VAVyFjKABam8RvNK",
+          "name": "Skillsnap_server_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.command }}"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -128
+      ],
+      "id": "4eb56aeb-924c-4246-a5c1-ef95d9c0aa2f",
+      "name": "Execute The Command",
+      "credentials": {
+        "sshPassword": {
+          "id": "ZALSwmpbritdgDz3",
+          "name": "Skillsnap_Server_SSH"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Route By User Status').item.json.output.chatId }}",
+        "text": "=Code: {{ $json.code }}\nstdout: {{ $json.stdout }}\nstderr:{{ $json.stderr }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        -128
+      ],
+      "id": "73b6fbd3-27ed-497d-95ae-0e241537f07b",
+      "name": "Send Results Back",
+      "webhookId": "88e10670-36a3-43c1-8647-3e372953a714",
+      "credentials": {
+        "telegramApi": {
+          "id": "VAVyFjKABam8RvNK",
+          "name": "Skillsnap_server_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.result.chat.id }}",
+        "text": "=Use One Of The Avaliabe Commands: ",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Custom Command",
+                    "additionalFields": {
+                      "callback_data": "custom_command"
+                    }
+                  },
+                  {
+                    "text": "uptime",
+                    "additionalFields": {
+                      "callback_data": "uptime"
+                    }
+                  },
+                  {
+                    "text": "Exit",
+                    "additionalFields": {
+                      "callback_data": "exit"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "pm2 status",
+                    "additionalFields": {
+                      "callback_data": "pm2 status"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "pm2 logs madrassaplay-api",
+                    "additionalFields": {
+                      "callback_data": "pm2 logs madrassaplay-api"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "pm2 restart madrassaplay-api",
+                    "additionalFields": {
+                      "callback_data": "pm2 restart madrassaplay-api"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "systemctl status nginx",
+                    "additionalFields": {
+                      "callback_data": "systemctl status nginx"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "systemctl restart nginx",
+                    "additionalFields": {
+                      "callback_data": "systemctl restart nginx"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        -128
+      ],
+      "id": "b89f2f88-5adb-4bdf-8cf3-e1d32c0cd7c2",
+      "name": "Show List Of Avaliabe Commands",
+      "webhookId": "d1668e02-8390-44ed-8596-77a35215c356",
+      "credentials": {
+        "telegramApi": {
+          "id": "VAVyFjKABam8RvNK",
+          "name": "Skillsnap_server_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Idle + start command').item.json.output.chatId || $json.result.chat.id}}",
+        "text": "=Hello THere {{ $('Idle + start command').item.json.output.username }} To The SkillSnap Server Controller!\nUse One Of The Avaliabe Commands: ",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Custom Command",
+                    "additionalFields": {
+                      "callback_data": "custom_command"
+                    }
+                  },
+                  {
+                    "text": "uptime",
+                    "additionalFields": {
+                      "callback_data": "uptime"
+                    }
+                  },
+                  {
+                    "text": "Exit",
+                    "additionalFields": {
+                      "callback_data": "exit"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "pm2 status",
+                    "additionalFields": {
+                      "callback_data": "pm2 status"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "pm2 logs madrassaplay-api",
+                    "additionalFields": {
+                      "callback_data": "pm2 logs madrassaplay-api"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "pm2 restart madrassaplay-api",
+                    "additionalFields": {
+                      "callback_data": "pm2 restart madrassaplay-api"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "systemctl status nginx",
+                    "additionalFields": {
+                      "callback_data": "systemctl status nginx"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "systemctl restart nginx",
+                    "additionalFields": {
+                      "callback_data": "systemctl restart nginx"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        -688
+      ],
+      "id": "037332ba-71ee-490b-9423-b708d0b12e1e",
+      "name": "Show List Of Avaliabe Commands2",
+      "webhookId": "d1668e02-8390-44ed-8596-77a35215c356",
+      "credentials": {
+        "telegramApi": {
+          "id": "VAVyFjKABam8RvNK",
+          "name": "Skillsnap_server_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.output.chatId }}",
+        "text": "=Invalid, Please type /start to initiate the bot. ",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        -416
+      ],
+      "id": "35e8af22-cb57-4dda-be59-cda246d031f4",
+      "name": "Error Message (Invalid Text)",
+      "webhookId": "d1668e02-8390-44ed-8596-77a35215c356",
+      "credentials": {
+        "telegramApi": {
+          "id": "VAVyFjKABam8RvNK",
+          "name": "Skillsnap_server_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU",
+          "mode": "list",
+          "cachedResultName": "Skillsnap_server_bot_checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "userID": "={{ $('Idle + start command').item.json.output.userId }}",
+            "status": "Active"
+          },
+          "matchingColumns": [
+            "userID"
+          ],
+          "schema": [
+            {
+              "id": "userID",
+              "displayName": "userID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user-name",
+              "displayName": "user-name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        512,
+        -688
+      ],
+      "id": "b49c62bd-9169-4e50-9ace-8e8d4360c58b",
+      "name": "Update User State \"Active\"\"",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qQX02ne6uTdqBLES",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU",
+          "mode": "list",
+          "cachedResultName": "Skillsnap_server_bot_checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ofs9hfvuqG_5Tjy_iGdA7ZrGBr_vVCg4QFq0GBxk1nU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "userID": "={{ $json.output.userId }}",
+            "status": "={{ $json.userStatus }}"
+          },
+          "matchingColumns": [
+            "userID"
+          ],
+          "schema": [
+            {
+              "id": "userID",
+              "displayName": "userID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user-name",
+              "displayName": "user-name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        304,
+        496
+      ],
+      "id": "2a8009ca-0c61-4e64-8fcb-21fa84996267",
+      "name": "Update User Status \"Custom Command\"\"",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qQX02ne6uTdqBLES",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Route By User Status').item.json.output.chatId }}",
+        "text": "Type The Command:",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        496
+      ],
+      "id": "91982d9c-5fbd-468c-a7e3-8a0a4bc63950",
+      "name": "Ask User For Command",
+      "webhookId": "d736d64b-d1e1-4fb4-a1d5-a83f1f1e1d2f",
+      "credentials": {
+        "telegramApi": {
+          "id": "VAVyFjKABam8RvNK",
+          "name": "Skillsnap_server_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.userStatus }}",
+                    "rightValue": "Idle",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "dc8e6ca7-6c8b-4014-99d0-1128c81729e7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Idle"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4f7af599-d0db-4214-aa56-feeed3664b6b",
+                    "leftValue": "={{ $json.userStatus }}",
+                    "rightValue": "Active",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Active"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2f45d584-8cf2-4b47-a774-92db5a830d61",
+                    "leftValue": "={{ $json.userStatus }}",
+                    "rightValue": "Custom Command",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Custom Command"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -112,
+        -16
+      ],
+      "id": "410b0629-2e2c-4f48-bb1a-848c084c2d7a",
+      "name": "Route By User Status"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "11942d03-f3b6-4101-b9e5-16331fc4cfb2",
+              "leftValue": "={{ $json.output.callback }}",
+              "rightValue": "exit",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        0
+      ],
+      "id": "29e174b2-ba89-4fcf-b6d1-6bcc74d81e9e",
+      "name": "Command or Exit ?"
+    },
+    {
+      "parameters": {
+        "content": "**USER CONTEXT STORAGE**\n- Google Sheet is the source of truth.\n- userID = unique key.\n- status is read/updated here.",
+        "height": 288,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -752,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "a2b74faf-334d-4931-9193-3b794b70f69d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "**CONTEXT LOGIC**\n- Idle → waiting for /start\n- Active → executing commands\n- Custom Command → waiting for user input",
+        "height": 304,
+        "width": 448,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -352,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "7f08dafa-5843-44d4-80fe-f941a995b9fb",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "EXIT FLOW\n- Resets status back to Idle.\n- Sends goodbye message.\n",
+        "height": 272,
+        "width": 416,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "8769deb6-e6b3-4f31-ae25-3403fcc4f821",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "**Executing Commands**                            ",
+        "height": 272,
+        "width": 944
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "57f9c726-907d-435e-a38b-6b0d8123f0c4",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "jsCode": "let command = {};\n\nif($input.first().json.output.callback) {\n  command = $input.first().json.output.callback;\n  return {json: {command}}\n} else {\n  command = $input.first().json.output.text\n  return {json: {command}}\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -128
+      ],
+      "id": "f64f1b87-2bb0-4b98-a46f-bb18a9460d97",
+      "name": "Extract Command (Custom or Prechoosed)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Context Normalizer": {
+      "main": [
+        [
+          {
+            "node": "Add User ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context Manager": {
+      "main": [
+        [
+          {
+            "node": "Route By User Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Idle + start command": {
+      "main": [
+        [
+          {
+            "node": "Update User State \"Active\"\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Message (Invalid Text)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Message / Callback Query": {
+      "main": [
+        [
+          {
+            "node": "Context Normalizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add User ID": {
+      "main": [
+        [
+          {
+            "node": "Get User Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Status": {
+      "main": [
+        [
+          {
+            "node": "Context Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Status Updated To \"Idle\"": {
+      "main": [
+        [
+          {
+            "node": "Goodby Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute The Command": {
+      "main": [
+        [
+          {
+            "node": "Send Results Back",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Results Back": {
+      "main": [
+        [
+          {
+            "node": "Show List Of Avaliabe Commands",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Show List Of Avaliabe Commands2": {
+      "main": [
+        []
+      ]
+    },
+    "Update User State \"Active\"\"": {
+      "main": [
+        [
+          {
+            "node": "Show List Of Avaliabe Commands2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update User Status \"Custom Command\"\"": {
+      "main": [
+        [
+          {
+            "node": "Ask User For Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route By User Status": {
+      "main": [
+        [
+          {
+            "node": "Idle + start command",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Command or Exit ?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update User Status \"Custom Command\"\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        []
+      ]
+    },
+    "Command or Exit ?": {
+      "main": [
+        [
+          {
+            "node": "Extract Command (Custom or Prechoosed)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "User Status Updated To \"Idle\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Command (Custom or Prechoosed)": {
+      "main": [
+        [
+          {
+            "node": "Execute The Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9b637b4f-feef-4a70-a082-6fe87e37c504",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f4b0c5f59bbef31163505e98dcd2838c7f21ed9a6357f9b8fdf9c2b512460ff"
+  },
+  "id": "g4kU7b6fCqLke07v",
+  "tags": [
+    {
+      "name": "Telegram",
+      "id": "0E14onrvhTwkzj51",
+      "createdAt": "2025-09-21T15:18:24.438Z",
+      "updatedAt": "2025-09-21T15:18:24.438Z"
+    },
+    {
+      "name": "GoogleSheet",
+      "id": "LeN9KCuAHkXIDJKA",
+      "createdAt": "2025-09-21T15:18:34.170Z",
+      "updatedAt": "2025-09-21T15:18:34.170Z"
+    },
+    {
+      "name": "SSH",
+      "id": "QbJ8lLZ9eMIerFEg",
+      "createdAt": "2025-09-21T15:18:39.736Z",
+      "updatedAt": "2025-09-21T15:18:39.736Z"
+    }
+  ]
+}
